@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "practice_id": "PR01",
-  "commit": "6413840ddaf44efff051e33cf65a1e98355b010f",
+  "commit": "09c04ede1927cc7971e08795cd694b8660c039e9",
   "course_kit": {
     "version": "v1-w01",
     "archive_sha256": "57866a9c98fa3abdec27b35a180697ee680bfb0f05cc015970ce306d6d849fea"
@@ -25,11 +25,26 @@
     "timeout 5s ros2 topic echo /turtle1/pose turtlesim_msgs/msg/Pose --once"
   ],
   "tests": [
-    {"name": "graph_nodes_and_topics_domain_16", "status": "passed"},
-    {"name": "pose_type_turtlesim_msgs_msg_Pose", "status": "passed"},
-    {"name": "pose_hz_about_62_5_for_12s", "status": "passed"},
-    {"name": "domain_17_hides_turtlesim_pose_timeout_124", "status": "passed"},
-    {"name": "domain_16_restores_pose_exit_0", "status": "passed"}
+    {
+      "name": "graph_nodes_and_topics_domain_16",
+      "status": "passed"
+    },
+    {
+      "name": "pose_type_turtlesim_msgs_msg_Pose",
+      "status": "passed"
+    },
+    {
+      "name": "pose_hz_about_62_5_for_12s",
+      "status": "passed"
+    },
+    {
+      "name": "domain_17_hides_turtlesim_pose_timeout_124",
+      "status": "passed"
+    },
+    {
+      "name": "domain_16_restores_pose_exit_0",
+      "status": "passed"
+    }
   ],
   "defect": {
     "reproducer": "Симулятор оставлен в ROS_DOMAIN_ID=16. Teleop и CLI перезапущены с ROS_DOMAIN_ID=17. Стрелки не двигают черепаху; ros2 node list --no-daemon показывает только /teleop_turtle; timeout 5s ros2 topic echo /turtle1/pose turtlesim_msgs/msg/Pose --once завершается с exit=124, поза не приходит (evidence/pr01/pose-broken.txt).",
