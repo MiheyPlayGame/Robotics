@@ -18,10 +18,11 @@ jobs:
       - name: Download course kit
         shell: bash
         run: |
-          curl -fsSLo course-kit.tar.gz "$COURSE_KIT_URL"
-          printf '%s  %s\n' "$COURSE_KIT_SHA256" course-kit.tar.gz | sha256sum -c -
+          kit_archive="${RUNNER_TEMP:-/tmp}/course-kit.tar.gz"
+          curl -fsSLo "$kit_archive" "$COURSE_KIT_URL"
+          printf '%s  %s\n' "$COURSE_KIT_SHA256" "$kit_archive" | sha256sum -c -
           mkdir -p .course-kit
-          tar -xzf course-kit.tar.gz -C .course-kit
+          tar -xzf "$kit_archive" -C .course-kit
           test "$(tr -d '[:space:]' < .course-kit/v1/VERSION)" = "$COURSE_KIT_VERSION"
 
       - name: Validate environment JSON
