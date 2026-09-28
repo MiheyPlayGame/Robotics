@@ -13,7 +13,7 @@ cd
 ```
 
 Назначение: убедиться, что терминал стоит в корне workspace (личный репозиторий), а не в установке ROS.
-Результат: `C:\Users\MPG\NSU\Robotics`. Это путь к репозиторию; `ros2 pkg prefix turtlesim` даёт `C:\ROS\ros2-windows` — это другой каталог (установленный пакет).
+Результат: `C:\Users\MPG\NSU\Robotics`. Это путь к репозиторию; `ros2 pkg prefix turtlesim` даёт `C:\ROS\ros2-windows` — это установленный пакет.
 
 ### 2. `mkdir -p` / `mkdir` с созданием родителя
 
@@ -27,7 +27,7 @@ mkdir src evidence\pr02
 ### 3. `tee` / перенаправление сборки в лог
 
 На bash: `colcon build ... 2>&1 | tee evidence/pr02/build.txt`.
-На Windows зафиксировали эквивалент:
+На Windows эквивалент:
 
 ```bat
 colcon build --symlink-install --packages-select turtle_bringup > evidence\pr02\build.txt 2>&1
