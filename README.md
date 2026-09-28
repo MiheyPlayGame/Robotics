@@ -1,9 +1,11 @@
-# ПР02. Терминал, пакет и запуск turtlesim
+# ПР03. Первая нода: поза и команда
 
 Личный репозиторий практики. Среда: ROS 2 **Lyrical**, установка Windows + pixi в `C:\ROS\ros2-windows`.
 Course-kit: `v1-w03`, SHA-256 `7fbfd3e8161ab6c6ebefc7663efdaf77d9a7d490399743507f33dcefbd5ac522`.
 
-Пакет `turtle_bringup` запускает установленный `turtlesim_node` через `sim.launch.py`.
+Пакет `turtle_bringup` (из ПР02) поднимает turtlesim. Пакет `patrol` подписывается на `/turtle1/pose` и по таймеру 0,1 с публикует `Twist` в относительный `cmd_vel`.
+
+Тип позы на Lyrical: `turtlesim_msgs/msg/Pose` (`ros2 topic type /turtle1/pose`).
 
 ## Подготовка терминала
 
@@ -13,70 +15,36 @@ pixi shell
 call local_setup.bat
 set ROS_DOMAIN_ID=16
 cd C:\Users\MPG\NSU\Robotics
-mkdir src evidence\pr02
 ```
 
-В bash/WSL:
-
-```bash
-source /opt/ros/lyrical/setup.bash
-export ROS_DOMAIN_ID=16
-cd "$(git rev-parse --show-toplevel)"
-mkdir -p src evidence/pr02
-```
-
-## Сборка пакета
-
-Из корня репозитория (подключена только базовая ROS):
+## Сборка
 
 ```bat
-colcon build --symlink-install --packages-select turtle_bringup
-```
-
-Логи: `evidence/pr02/build-empty.txt` (без launch), `evidence/pr02/build.txt` (с launch).
-
-Подключить workspace:
-
-```bat
+colcon build --symlink-install --packages-select turtle_bringup patrol
 call install\setup.bat
-ros2 pkg prefix turtle_bringup
 ```
 
 ## Запуск
+
+Терминал 1 — симулятор:
 
 ```bat
 ros2 launch turtle_bringup sim.launch.py
 ```
 
-В другом терминале с тем же `local_setup`, `install\setup.bat` и `ROS_DOMAIN_ID=16`:
+Терминал 2 — patrol **с remap** (исправная связь):
 
 ```bat
-ros2 node list --no-daemon --spin-time 2
-ros2 topic echo /turtle1/pose --once
-ros2 topic pub --once /turtle1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 1.0}, angular: {z: 0.5}}"
+ros2 run patrol patrol --ros-args -r cmd_vel:=/turtle1/cmd_vel
 ```
 
-## Сбой имени топика и исправление
+Без remap нода публикует в относительный `cmd_vel` (часто `/cmd_vel`), не соединённый с `/turtle1/cmd_vel` — дефект имени для ПР03.
 
-Сбой (издатель виден, turtlesim не подписан):
+## Тесты и проверка сдачи
 
 ```bat
-ros2 topic pub --rate 1 --wait-matching-subscriptions 0 /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 1.0}, angular: {z: 0.5}}"
-ros2 topic info /cmd_vel --verbose
-ros2 topic info /turtle1/cmd_vel --verbose
+python -m pytest src/patrol/test
+python .course-kit/v1/tools/check_practice.py PR03 --submission .
 ```
 
-Исправление — только полное имя:
-
-```bat
-ros2 topic pub --rate 1 --wait-matching-subscriptions 0 /turtle1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 1.0}, angular: {z: 0.5}}"
-```
-
-Подробности: `evidence/pr02/commands.md`, типы: `evidence/pr02/types.md`.
-
-## Локальная проверка файлов
-
-```bash
-python3 -m py_compile src/turtle_bringup/launch/sim.launch.py
-python3 .course-kit/v1/tools/check_practice.py PR02 --submission .
-```
+Evidence: `evidence/pr03/`.

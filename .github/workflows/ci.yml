@@ -17,14 +17,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build PR02 launch package
+      - name: Build packages
         shell: bash
         run: |
           source /opt/ros/jazzy/setup.bash
-          colcon build --symlink-install --packages-select turtle_bringup
+          # Jazzy Pose is turtlesim/msg/Pose; package.xml still lists turtlesim_msgs for Lyrical.
+          colcon build --symlink-install --packages-select turtle_bringup patrol
           source install/setup.bash
           test -f "$(ros2 pkg prefix turtle_bringup)/share/turtle_bringup/launch/sim.launch.py"
-          python3 -m py_compile src/turtle_bringup/launch/sim.launch.py
+          test -f "$(ros2 pkg prefix patrol)/lib/patrol/patrol"
+          python3 -m py_compile src/patrol/patrol/patrol.py src/patrol/patrol/command.py
+          python3 -m pytest src/patrol/test/test_command.py -q
 
       - name: Download course kit
         shell: bash
@@ -38,4 +41,4 @@ jobs:
 
       - name: Check PR evidence
         shell: bash
-        run: python3 .course-kit/v1/tools/check_practice.py PR02 --submission .
+        run: python3 .course-kit/v1/tools/check_practice.py PR03 --submission .
