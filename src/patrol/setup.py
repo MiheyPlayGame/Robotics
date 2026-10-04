@@ -16,7 +16,7 @@ setup(
     zip_safe=True,
     maintainer='MiheyPlayGame',
     maintainer_email='81063698+MiheyPlayGame@users.noreply.github.com',
-    description='PR03 patrol node: pose subscription and Twist command timer.',
+    description='PR04 patrol node: parameterized speeds and publish rate with validation.',
     license='Apache-2.0',
     extras_require={
         'test': [

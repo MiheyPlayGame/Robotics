@@ -3,7 +3,7 @@
 <package format="3">
   <name>patrol</name>
   <version>0.0.0</version>
-  <description>PR03 patrol node: pose subscription and Twist command timer.</description>
+  <description>PR04 patrol node: parameterized speeds and publish rate with validation.</description>
   <maintainer email="81063698+MiheyPlayGame@users.noreply.github.com">MiheyPlayGame</maintainer>
   <license>Apache-2.0</license>
 

@@ -1,11 +1,9 @@
-# ПР03. Первая нода: поза и команда
+# ПР04. Параметризуем движение
 
 Личный репозиторий практики. Среда: ROS 2 **Lyrical**, установка Windows + pixi в `C:\ROS\ros2-windows`.
-Course-kit: `v1-w03`, SHA-256 `7fbfd3e8161ab6c6ebefc7663efdaf77d9a7d490399743507f33dcefbd5ac522`.
+Course-kit: `v1-w04`, SHA-256 `fec6b4e886c19146078bf69fbf90a19279a4cd33f656642395350b299efeb226`.
 
-Пакет `turtle_bringup` (из ПР02) поднимает turtlesim. Пакет `patrol` подписывается на `/turtle1/pose` и по таймеру 0,1 с публикует `Twist` в относительный `cmd_vel`.
-
-Тип позы на Lyrical: `turtlesim_msgs/msg/Pose` (`ros2 topic type /turtle1/pose`).
+Пакет `turtle_bringup` поднимает turtlesim. Пакет `patrol` подписывается на `/turtle1/pose` и публикует `Twist` в относительный `cmd_vel` с параметрами `linear_speed`, `turn_rate`, `publish_hz`.
 
 ## Подготовка терминала
 
@@ -32,19 +30,26 @@ call install\setup.bat
 ros2 launch turtle_bringup sim.launch.py
 ```
 
-Терминал 2 — patrol **с remap** (исправная связь):
+Терминал 2 — patrol с remap:
 
 ```bat
 ros2 run patrol patrol --ros-args -r cmd_vel:=/turtle1/cmd_vel
 ```
 
-Без remap нода публикует в относительный `cmd_vel` (часто `/cmd_vel`), не соединённый с `/turtle1/cmd_vel` — дефект имени для ПР03.
+Параметры (по умолчанию `0.5`, `0.3`, `10.0`):
+
+```bat
+ros2 param set /patrol publish_hz 5.0
+ros2 param set /patrol publish_hz 0.0
+```
+
+Допустимы: скорость `0…1` м/с, поворот `−1…1` рад/с, частота `1…30` Гц. Нулевая/NaN/отрицательная частота отклоняется без смены таймера.
 
 ## Тесты и проверка сдачи
 
 ```bat
 python -m pytest src/patrol/test
-python .course-kit/v1/tools/check_practice.py PR03 --submission .
+python .course-kit/v1/tools/check_practice.py PR04 --submission .
 ```
 
-Evidence: `evidence/pr03/`.
+Evidence: `evidence/pr04/`.
