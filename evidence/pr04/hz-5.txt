@@ -1,0 +1,17 @@
+﻿WARNING: topic [/turtle1/cmd_vel] does not appear to be published yet
+average rate: 5.215
+	min: 0.169s max: 0.206s std dev: 0.01593s window: 3
+average rate: 5.098
+	min: 0.169s max: 0.215s std dev: 0.01242s window: 8
+average rate: 5.039
+	min: 0.169s max: 0.215s std dev: 0.01097s window: 13
+average rate: 5.042
+	min: 0.169s max: 0.215s std dev: 0.00966s window: 18
+average rate: 5.003
+	min: 0.188s max: 0.215s std dev: 0.00651s window: 20
+average rate: 5.004
+	min: 0.191s max: 0.211s std dev: 0.00513s window: 20
+average rate: 5.012
+	min: 0.191s max: 0.209s std dev: 0.00443s window: 20
+average rate: 4.989
+	min: 0.193s max: 0.212s std dev: 0.00503s window: 20

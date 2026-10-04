@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "practice_id": "PR04",
+  "commit": "c94ff7e606b1c01be54d349fef44569b1a2348d5",
+  "course_kit": {
+    "version": "v1-w04",
+    "archive_sha256": "fec6b4e886c19146078bf69fbf90a19279a4cd33f656642395350b299efeb226"
+  },
+  "commands": [
+    "cd C:\\ROS\\ros2-windows && pixi shell && call local_setup.bat && set ROS_DOMAIN_ID=16",
+    "cd C:\\Users\\MPG\\NSU\\Robotics && colcon build --symlink-install --packages-select turtle_bringup patrol",
+    "call install\\setup.bat && python -m pytest src/patrol/test",
+    "ros2 launch turtle_bringup sim.launch.py",
+    "ros2 run patrol patrol --ros-args -r cmd_vel:=/turtle1/cmd_vel",
+    "ros2 param get /patrol publish_hz",
+    "ros2 param set /patrol publish_hz 5.0",
+    "ros2 topic hz /turtle1/cmd_vel --window 20",
+    "ros2 param set /patrol publish_hz 0.0",
+    "ros2 service call /clear std_srvs/srv/Empty {}",
+    "ros2 action list -t",
+    "python .course-kit/v1/tools/check_practice.py PR04 --submission ."
+  ],
+  "tests": [
+    {
+      "name": "pytest_publish_hz_10_to_5_zero_negative_nan",
+      "status": "passed"
+    },
+    {
+      "name": "pytest_command_and_bounds",
+      "status": "passed"
+    },
+    {
+      "name": "param_set_publish_hz_5_changes_stream",
+      "status": "passed"
+    },
+    {
+      "name": "param_set_publish_hz_0_rejected_keeps_old",
+      "status": "passed"
+    },
+    {
+      "name": "defect_no_validation_zero_division",
+      "status": "passed"
+    },
+    {
+      "name": "clear_service_and_rotate_absolute_action",
+      "status": "passed"
+    }
+  ],
+  "defect": {
+    "reproducer": "Временно отключена validate_publish_hz в on_set callback. set_parameters(publish_hz=0.0) → ZeroDivisionError в timer_period_from_hz (1/0); параметр уже записан как 0.0 (evidence/pr04/param-set-0-broken.txt).",
+    "root_cause": "Проверка частоты должна отклонять недопустимое значение до post-set, где считается период 1/publish_hz и пересоздаётся таймер. Без проверки ноль проходит в активное состояние и ломает пересоздание таймера.",
+    "proof_after": "С валидацией: ros2 param set /patrol publish_hz 5.0 → successful, topic hz ≈ 5 Hz; ros2 param set /patrol publish_hz 0.0 → Setting parameter failed: publish_hz must be in [1.0, 30.0] Hz; param get остаётся 5.0, timer_period=0.2 (cli-param-set-0.txt, param-set-0-fixed.txt, hz-5.txt)."
+  },
+  "claims": {
+    "public_tests_passed": true,
+    "defect_reproduced": true,
+    "defect_fixed": true
+  },
+  "time": {
+    "contact_academic_hours": 2,
+    "self_study_hours": 2
+  },
+  "ai_used": true
+}

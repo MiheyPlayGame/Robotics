@@ -1,0 +1,5 @@
+before publish_hz=10.0
+set 5.0 -> successful=True reason=''
+after 5.0 publish_hz=5.0 timer_period=0.2
+set 0.0 -> successful=False reason='publish_hz must be in [1.0, 30.0] Hz'
+after 0.0 publish_hz=5.0 timer_period=0.2
