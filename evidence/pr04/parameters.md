@@ -60,7 +60,7 @@ Double value is: 5.0
 
 ## Дефект: проверка частоты временно отключена
 
-Временно убрали `validate_publish_hz` из `add_on_set_parameters_callback` и передали `0.0`.
+Временно уберём `validate_publish_hz` из `add_on_set_parameters_callback` и передадим `0.0`.
 Результат (`param-set-0-broken.txt`):
 
 ```
