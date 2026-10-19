@@ -1,9 +1,9 @@
-# ПР04. Параметризуем движение
+# ПР05. Launch, QoS и повтор записи
 
 Личный репозиторий практики. Среда: ROS 2 **Lyrical**, установка Windows + pixi в `C:\ROS\ros2-windows`.
-Course-kit: `v1-w04`, SHA-256 `fec6b4e886c19146078bf69fbf90a19279a4cd33f656642395350b299efeb226`.
+Course-kit: `v1-w06`, SHA-256 `6eda53e1c566f7f0a7e09d7afe1e5a6f3b98397175a7e57dede9a84c6d14d0fe`.
 
-Пакет `turtle_bringup` поднимает turtlesim. Пакет `patrol` подписывается на `/turtle1/pose` и публикует `Twist` в относительный `cmd_vel` с параметрами `linear_speed`, `turn_rate`, `publish_hz`.
+Пакет `course_bringup` одной командой поднимает turtlesim, `patrol`, `pose_relay` (best_effort `sensor_pose`) и `qos_probe` с настраиваемой reliability. Опционально пишет MCAP.
 
 ## Подготовка терминала
 
@@ -18,38 +18,35 @@ cd C:\Users\MPG\NSU\Robotics
 ## Сборка
 
 ```bat
-colcon build --symlink-install --packages-select turtle_bringup patrol
+colcon build --symlink-install --packages-select turtle_bringup patrol course_bringup
 call install\setup.bat
 ```
 
 ## Запуск
 
-Терминал 1 — симулятор:
+Несовместимый QoS (`reliable` против `best_effort`):
 
 ```bat
-ros2 launch turtle_bringup sim.launch.py
+ros2 launch course_bringup patrol.launch.py namespace:=robot_a subscriber_reliability:=reliable record:=false
 ```
 
-Терминал 2 — patrol с remap:
+Совместимый профиль и запись:
 
 ```bat
-ros2 run patrol patrol --ros-args -r cmd_vel:=/turtle1/cmd_vel
+ros2 launch course_bringup patrol.launch.py namespace:=robot_a subscriber_reliability:=best_effort record:=true bag_dir:=evidence/pr05/bag
 ```
 
-Параметры (по умолчанию `0.5`, `0.3`, `10.0`):
+Replay с override:
 
 ```bat
-ros2 param set /patrol publish_hz 5.0
-ros2 param set /patrol publish_hz 0.0
+ros2 bag play evidence/pr05/bag --qos-profile-overrides-path config/qos-overrides.yaml
 ```
-
-Допустимы: скорость `0…1` м/с, поворот `−1…1` рад/с, частота `1…30` Гц. Нулевая/NaN/отрицательная частота отклоняется без смены таймера.
 
 ## Тесты и проверка сдачи
 
 ```bat
 python -m pytest src/patrol/test
-python .course-kit/v1/tools/check_practice.py PR04 --submission .
+python .course-kit/v1/tools/check_practice.py PR05 --submission .
 ```
 
-Evidence: `evidence/pr04/`.
+Evidence: `evidence/pr05/`.

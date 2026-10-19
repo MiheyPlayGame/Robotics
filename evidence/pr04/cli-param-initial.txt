@@ -1,3 +1,0 @@
-Double value is: 10.0
-Double value is: 0.5
-Double value is: 0.3
