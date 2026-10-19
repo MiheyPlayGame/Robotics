@@ -1,11 +1,11 @@
-# ПР05. Launch, QoS и повтор записи
+# ПР06. Модель робота, tf2 и QoS преобразований
 
-Личный репозиторий практики. Среда: ROS 2 **Lyrical**, установка Windows + pixi в `C:\ROS\ros2-windows`.
+Личный репозиторий практики. Среда: ROS 2 **Lyrical**, Windows + pixi в `C:\ROS\ros2-windows`.
 Course-kit: `v1-w06`, SHA-256 `6eda53e1c566f7f0a7e09d7afe1e5a6f3b98397175a7e57dede9a84c6d14d0fe`.
 
-Пакет `course_bringup` одной командой поднимает turtlesim, `patrol`, `pose_relay` (best_effort `sensor_pose`) и `qos_probe` с настраиваемой reliability. Опционально пишет MCAP.
+Пакет `course_description` содержит параметризованный `urdf/vehicle.urdf.xacro` (Ackermann, размеры из `models/course_ackermann`) и launch `display.launch.py` с `robot_state_publisher`.
 
-## Подготовка терминала
+## Подготовка
 
 ```bat
 cd C:\ROS\ros2-windows
@@ -18,35 +18,29 @@ cd C:\Users\MPG\NSU\Robotics
 ## Сборка
 
 ```bat
-colcon build --symlink-install --packages-select turtle_bringup patrol course_bringup
+colcon build --symlink-install --packages-select course_description
 call install\setup.bat
 ```
 
 ## Запуск
 
-Несовместимый QoS (`reliable` против `best_effort`):
-
 ```bat
-ros2 launch course_bringup patrol.launch.py namespace:=robot_a subscriber_reliability:=reliable record:=false
+ros2 launch course_description display.launch.py
 ```
 
-Совместимый профиль и запись:
+В RViz: Fixed Frame = `base_link`, добавьте TF и RobotModel.
+
+Проверка URDF:
 
 ```bat
-ros2 launch course_bringup patrol.launch.py namespace:=robot_a subscriber_reliability:=best_effort record:=true bag_dir:=evidence/pr05/bag
+python -c "import xacro; print(xacro.process_file('src/course_description/urdf/vehicle.urdf.xacro').toxml())" > evidence\pr06\vehicle.urdf
 ```
 
-Replay с override:
+## Тесты и сдача
 
 ```bat
-ros2 bag play evidence/pr05/bag --qos-profile-overrides-path config/qos-overrides.yaml
+python -m pytest src/course_description/test -q
+python .course-kit/v1/tools/check_practice.py PR06 --submission .
 ```
 
-## Тесты и проверка сдачи
-
-```bat
-python -m pytest src/patrol/test
-python .course-kit/v1/tools/check_practice.py PR05 --submission .
-```
-
-Evidence: `evidence/pr05/`.
+Evidence: `evidence/pr06/`.

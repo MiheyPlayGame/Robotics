@@ -21,20 +21,13 @@ jobs:
         shell: bash
         run: |
           source /opt/ros/jazzy/setup.bash
-          # Jazzy Pose is turtlesim/msg/Pose; package.xml still lists turtlesim_msgs for Lyrical.
-          colcon build --symlink-install --packages-select turtle_bringup patrol course_bringup
+          colcon build --symlink-install --packages-select course_description
           source install/setup.bash
-          test -f "$(ros2 pkg prefix turtle_bringup)/share/turtle_bringup/launch/sim.launch.py"
-          test -f "$(ros2 pkg prefix patrol)/lib/patrol/patrol"
-          test -f "$(ros2 pkg prefix course_bringup)/share/course_bringup/launch/patrol.launch.py"
-          test -f "$(ros2 pkg prefix course_bringup)/lib/course_bringup/pose_relay"
-          python3 -m py_compile \
-            src/patrol/patrol/patrol.py \
-            src/patrol/patrol/command.py \
-            src/course_bringup/course_bringup/pose_relay.py \
-            src/course_bringup/course_bringup/qos_probe.py \
-            src/course_bringup/launch/patrol.launch.py
-          python3 -m pytest src/patrol/test/test_command.py -q
+          test -f "$(ros2 pkg prefix course_description)/share/course_description/urdf/vehicle.urdf.xacro"
+          test -f "$(ros2 pkg prefix course_description)/share/course_description/launch/display.launch.py"
+          xacro src/course_description/urdf/vehicle.urdf.xacro > /tmp/vehicle.urdf
+          check_urdf /tmp/vehicle.urdf
+          python3 -m pytest src/course_description/test -q
 
       - name: Download course kit
         shell: bash
@@ -48,4 +41,4 @@ jobs:
 
       - name: Check PR evidence
         shell: bash
-        run: python3 .course-kit/v1/tools/check_practice.py PR05 --submission .
+        run: python3 .course-kit/v1/tools/check_practice.py PR06 --submission .

@@ -1,4 +1,0 @@
-=== reliable echo against best_effort publisher ===
-topic visible; no message within timeout (QoS incompatibility)
-[WARN] [1792387340.915803800] [pr05_recv_once]: New publisher discovered on topic '/robot_a/sensor_pose', offering incompatible QoS. No messages will be received from it. Last incompatible policy: RELIABILITY
-[timeout/no message] reliability=reliable after 3.0s
