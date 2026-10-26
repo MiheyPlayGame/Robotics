@@ -3,31 +3,40 @@ name: ROS checks
 on: [push, pull_request]
 
 env:
-  COURSE_KIT_VERSION: v1-w06
-  COURSE_KIT_URL: https://ros.lms.ci.nsu.ru/downloads/robotics-course-kit-v1-w06-6eda53e1c566.tar.gz
-  COURSE_KIT_SHA256: 6eda53e1c566f7f0a7e09d7afe1e5a6f3b98397175a7e57dede9a84c6d14d0fe
+  COURSE_KIT_VERSION: v1-w07
+  COURSE_KIT_URL: https://ros.lms.ci.nsu.ru/downloads/robotics-course-kit-v1-w07-9b7fdd5424d3.tar.gz
+  COURSE_KIT_SHA256: 9b7fdd5424d3d97e47d51dbe23064934585e62135dc2902844dd679529bda929
 
 jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: osrf/ros:jazzy-desktop-full@sha256:d16957210572c5f919f3f9bd2fb0cc24a82542647489d8b8eda7c3beda31305f
+      image: osrf/ros:lyrical-desktop-full
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Install ROS deps
+        shell: bash
+        run: |
+          apt-get update
+          apt-get upgrade -y --with-new-pkgs
+          apt-get install -y --no-install-recommends \
+            ros-lyrical-ackermann-msgs \
+            ros-lyrical-ros-gz \
+            python3-pytest \
+            ros-lyrical-rosbag2-storage-mcap
+
       - name: Build packages
         shell: bash
         run: |
-          source /opt/ros/jazzy/setup.bash
-          colcon build --symlink-install --packages-select course_description
+          source /opt/ros/lyrical/setup.bash
+          colcon build --symlink-install --packages-up-to course_simulation
           source install/setup.bash
-          test -f "$(ros2 pkg prefix course_description)/share/course_description/urdf/vehicle.urdf.xacro"
-          test -f "$(ros2 pkg prefix course_description)/share/course_description/launch/display.launch.py"
-          xacro src/course_description/urdf/vehicle.urdf.xacro > /tmp/vehicle.urdf
-          check_urdf /tmp/vehicle.urdf
-          python3 -m pytest src/course_description/test -q
+          test -f "$(ros2 pkg prefix course_simulation)/share/course_simulation/launch/simulation.launch.py"
+          test -f "$(ros2 pkg prefix course_simulation)/share/course_simulation/config/bridge.yaml"
+          python3 -m pytest src/course_simulation/test -q
 
       - name: Download course kit
         shell: bash
@@ -41,4 +50,4 @@ jobs:
 
       - name: Check PR evidence
         shell: bash
-        run: python3 .course-kit/v1/tools/check_practice.py PR06 --submission .
+        run: python3 .course-kit/v1/tools/check_practice.py PR07 --submission .

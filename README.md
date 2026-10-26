@@ -1,82 +1,66 @@
-# ПР06. Модель робота, tf2 и QoS преобразований
+# ПР07. Gazebo и мост ros_gz
 
-Личный репозиторий практики. Среда: ROS 2 **Lyrical**, Windows + pixi в `C:\ROS\ros2-windows`.
-Course-kit: `v1-w06`, SHA-256 `6eda53e1c566f7f0a7e09d7afe1e5a6f3b98397175a7e57dede9a84c6d14d0fe`.
+Личный репозиторий практики. Код правится на Windows; симуляция — в **Docker**
+(`osrf/ros:lyrical-desktop-full` + `ros-lyrical-ros-gz`, Gazebo Jetty).
 
-Пакет `course_description` содержит параметризованный `urdf/vehicle.urdf.xacro` (Ackermann, размеры из `models/course_ackermann`) и launch `display.launch.py` с `robot_state_publisher`.
+Course-kit: `v1-w07`, SHA-256 `9b7fdd5424d3d97e47d51dbe23064934585e62135dc2902844dd679529bda929`.
 
-## Подготовка
+Пакеты: `course_description` (URDF/tf из ПР06), `course_simulation` (мир, bridge, адаптеры).
 
-Во **всех** терминалах (launch, RViz, проверки) одинаковый domain и транспорт:
+## Docker
 
-```bat
-cd C:\ROS\ros2-windows
-pixi shell
-call local_setup.bat
-set ROS_DOMAIN_ID=16
-cd C:\Users\MPG\NSU\Robotics
-call install\setup.bat
-set FASTDDS_BUILTIN_TRANSPORTS=UDPv4
+Нужен Docker Desktop. Первый запуск:
+
+```powershell
+.\docker\run-pr07.ps1
+docker exec -it robotics-pr07 bash
 ```
 
-`FASTDDS_BUILTIN_TRANSPORTS=UDPv4` нужен на Windows, иначе RViz часто не видит `/tf_static` (разный Fast DDS SHM/UDP).
+В контейнере:
 
-## Сборка
-
-```bat
-colcon build --symlink-install --packages-select course_description
-call install\setup.bat
+```bash
+cd /ws
+colcon build --symlink-install --packages-up-to course_simulation
+source install/setup.bash
+export GZ_SIM_RESOURCE_PATH="$PWD/src/course_simulation/models${GZ_SIM_RESOURCE_PATH:+:$GZ_SIM_RESOURCE_PATH}"
+gz sdf -k src/course_simulation/models/course_ackermann/model.sdf
+mkdir -p evidence/pr07 fixtures
+ros2 launch course_simulation simulation.launch.py headless:=true 2>&1 | tee evidence/pr07/headless.txt
 ```
 
-## Запуск
+Проверки — во втором `docker exec` (launch не останавливать):
 
-Терминал 1 — модель и `/tf_static`:
-
-```bat
-ros2 launch course_description display.launch.py
+```bash
+source /ws/install/setup.bash
+ros2 topic echo /clock --once
+ros2 topic hz /vehicle/scan
+ros2 topic info -v /vehicle/imu
 ```
 
-Ожидание: `Robot initialized` (WARN KDL про inertia у `base_link` — норма).
+Запись bag (≥ 30 с sim-time):
 
-Терминал 2 — RViz (на Windows без HiDPI-флагов 3D-viewport часто чёрный и мерцает):
-
-```bat
-set QT_ENABLE_HIGHDPI_SCALING=0
-set QT_SCREEN_SCALE_FACTORS=1
-ros2 run rviz2 rviz2
+```bash
+timeout --preserve-status --signal=INT --kill-after=5s 35s \
+  ros2 bag record --storage mcap --use-sim-time -o fixtures/pr07-sensors \
+  --topics /vehicle/camera/image_raw /vehicle/scan /vehicle/imu /vehicle/odom \
+  /tf /tf_static /clock
+ros2 bag info fixtures/pr07-sensors | tee evidence/pr07/bag-info.txt
 ```
 
-В RViz: Fixed Frame = `base_link` → Add → **TF** и **RobotModel**.  
-Ожидание в TF: `base_link`, `camera_link`, `imu_link`, `lidar_link` — Transform OK; дерево `base_link` → сенсоры.
+Тесты и checker:
 
-Колёса появятся в `/tf` только после `joint_state_publisher` (в launch его нет). Visual/Collision кузова на части Windows-машин не рисуется при Status Ok — для демо достаточно осей TF.
-
-## Проверка QoS `/tf_static`
-
-Пока launch жив (тот же setup / domain / `FASTDDS_BUILTIN_TRANSPORTS`):
-
-```bat
-ros2 topic info /tf_static --verbose
-python evidence\pr06\_recv_tf_static.py --durability transient_local --timeout 5
-python evidence\pr06\_recv_tf_static.py --durability volatile --timeout 4
+```bash
+colcon test --packages-select course_simulation
+python3 .course-kit/v1/tools/check_practice.py PR07 --submission .
 ```
 
-Publisher: RELIABLE + **TRANSIENT_LOCAL**.  
-`transient_local` → 3 transforms (camera/imu/lidar); `volatile` → timeout.
+## Изменение модели
 
-Проверка URDF:
+В `models/course_ackermann/model.sdf` частота лидара изменена с 10 Гц на **5 Гц**
+(заявленная частота в `sensors.json`). Namespace нод адаптеров: `sim`
+(абсолютные `/vehicle/...`, `/drive/safe`, `/clock` без изменений).
 
-```bat
-python -c "import xacro; print(xacro.process_file('src/course_description/urdf/vehicle.urdf.xacro').toxml())" > evidence\pr06\vehicle.urdf
-```
+## Адаптеры
 
-или `python evidence\pr06\_make_model_check.py`.
-
-## Тесты и сдача
-
-```bat
-python -m pytest src/course_description/test -q
-python .course-kit/v1/tools/check_practice.py PR06 --submission .
-```
-
-Evidence: `evidence/pr06/`.
+- `/drive/safe` → `/vehicle/gz_cmd_vel` (`cmd_adapter`)
+- `/vehicle/odom_gz` → `/vehicle/odom` + `/tf` odom→base_link (`odom_adapter`)

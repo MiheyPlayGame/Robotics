@@ -1,0 +1,24 @@
+# PR07 simulation image: Ubuntu 26.04 / ROS 2 Lyrical / Gazebo Jetty (+ ros_gz).
+# Build: docker build -f docker/Dockerfile.pr07 -t robotics-pr07 .
+# Run:   docker/run-pr07.ps1  (or bash docker/run-pr07.sh)
+
+FROM osrf/ros:lyrical-desktop-full
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    ROS_DISTRO=lyrical \
+    GZ_SIM_RESOURCE_PATH=/ws/src/course_simulation/models
+
+RUN apt-get update \
+ && apt-get upgrade -y --with-new-pkgs \
+ && apt-get install -y --no-install-recommends \
+      ros-${ROS_DISTRO}-ackermann-msgs \
+      ros-${ROS_DISTRO}-ros-gz \
+      python3-pytest \
+      ros-${ROS_DISTRO}-rosbag2-storage-mcap \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /ws
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]

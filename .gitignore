@@ -4,5 +4,7 @@ robotics-course-kit-*.sha256.txt
 build/
 install/
 log/
+fixtures/
 **/__pycache__/
 *.pyc
+.pytest_cache/
