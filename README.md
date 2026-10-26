@@ -16,13 +16,30 @@ Course-kit: `v1-w07`, SHA-256 `9b7fdd5424d3d97e47d51dbe23064934585e62135dc290284
 docker exec -it robotics-pr07 bash
 ```
 
+### Пересоздание контейнера
+
+Если в логе launch есть `Another world of the same name is running`, или
+`/vehicle/scan` даёт ~20 Гц вместо ~5 — в контейнере остался старый Gazebo.
+Останови launch (`Ctrl+C`), выйди из bash и пересоздай контейнер:
+
+```powershell
+docker rm -f robotics-pr07
+.\docker\run-pr07.ps1
+docker exec -it robotics-pr07 bash
+```
+
+Дальше снова `colcon build` (если `install/` ещё на месте — можно сразу launch)
+и один экземпляр `simulation.launch.py`. Не запускай второй launch в том же контейнере.
+
 В контейнере:
 
 ```bash
 cd /ws
+source /opt/ros/lyrical/setup.bash
 colcon build --symlink-install --packages-up-to course_simulation
 source install/setup.bash
 export GZ_SIM_RESOURCE_PATH="$PWD/src/course_simulation/models${GZ_SIM_RESOURCE_PATH:+:$GZ_SIM_RESOURCE_PATH}"
+export ROS_DOMAIN_ID=16
 gz sdf -k src/course_simulation/models/course_ackermann/model.sdf
 mkdir -p evidence/pr07 fixtures
 ros2 launch course_simulation simulation.launch.py headless:=true 2>&1 | tee evidence/pr07/headless.txt
@@ -31,11 +48,16 @@ ros2 launch course_simulation simulation.launch.py headless:=true 2>&1 | tee evi
 Проверки — во втором `docker exec` (launch не останавливать):
 
 ```bash
+source /opt/ros/lyrical/setup.bash
 source /ws/install/setup.bash
+export ROS_DOMAIN_ID=16
 ros2 topic echo /clock --once
 ros2 topic hz /vehicle/scan
 ros2 topic info -v /vehicle/imu
 ```
+
+Ожидание: `/clock` отвечает; `/vehicle/scan` ≈ **5 Гц**; в логе launch нет
+`Another world…`.
 
 Запись bag (≥ 30 с sim-time):
 
