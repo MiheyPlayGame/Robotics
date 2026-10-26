@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "practice_id": "PR07",
+  "commit": "f34e81e990f7c83e9e73dd2380c114301157bc06",
+  "course_kit": {
+    "version": "v1-w07",
+    "archive_sha256": "9b7fdd5424d3d97e47d51dbe23064934585e62135dc2902844dd679529bda929"
+  },
+  "commands": [
+    "docker build -f docker/Dockerfile.pr07 -t robotics-pr07 .",
+    "colcon build --symlink-install --packages-up-to course_simulation",
+    "python3 -m pytest src/course_simulation/test -q",
+    "ros2 launch course_simulation simulation.launch.py headless:=true",
+    "ros2 topic echo /clock --once",
+    "python3 evidence/pr07/_probe_sensors.py",
+    "bash evidence/pr07/_record_bag.sh",
+    "ros2 bag info fixtures/pr07-sensors",
+    "python3 .course-kit/v1/tools/check_practice.py PR07 --submission ."
+  ],
+  "tests": [
+    {"name": "pytest course_simulation adapters", "status": "passed"},
+    {"name": "gz sdf -k course_ackermann/model.sdf", "status": "passed"},
+    {"name": "headless /clock + sensors live", "status": "passed"},
+    {"name": "bag duration >= 30s sim-time, 7 topics", "status": "passed"}
+  ],
+  "defect": {
+    "reproducer": "In a temporary bridge copy set IMU direction ROS_TO_GZ (or wrong gz topic). ros2 topic info -v /vehicle/imu still showed a ROS publisher from the bridge, but ros2 topic echo /vehicle/imu --once timed out while gz topic -e -t /vehicle/imu had data.",
+    "root_cause": "Bridge direction/topic mismatch: GZ_TO_ROS required for IMU. Wrong direction leaves an empty ROS publisher without carrying Gazebo samples.",
+    "proof_after": "Restored direction GZ_TO_ROS and qos_profile SENSOR_DATA in config/bridge.yaml. Echo and bag show /vehicle/imu messages; info -v reports BEST_EFFORT keep_last(5)."
+  },
+  "claims": {
+    "public_tests_passed": true,
+    "defect_reproduced": true,
+    "defect_fixed": true,
+    "headless_verified": true,
+    "recording_verified": true,
+    "odometry_tf_owned": true
+  },
+  "time": {
+    "contact_academic_hours": 2,
+    "self_study_hours": 2.5
+  },
+  "ai_used": true
+}

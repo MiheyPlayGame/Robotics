@@ -1,0 +1,51 @@
+{
+  "odom_source_frames": {
+    "header.frame_id": "course_ackermann/odom",
+    "child_frame_id": "course_ackermann/base_link"
+  },
+  "odom_normalized_frames": {
+    "header.frame_id": "odom",
+    "child_frame_id": "base_link"
+  },
+  "sensor_change": "lidar update_rate 10→5 Hz in model.sdf",
+  "rtf_note": "Measured Hz near declared rates at RTF≈1; small deficits (camera 18.2 vs 20, imu 97.8 vs 100) match load + headless rendering, not a topic wiring fault.",
+  "sensors": [
+    {
+      "topic": "/vehicle/camera/image_raw",
+      "type": "sensor_msgs/msg/Image",
+      "frame_id": "camera_link",
+      "time_source": "simulation (/clock)",
+      "declared_hz": 20,
+      "measured_hz": 18.2,
+      "qos": "sensor_data (best_effort, keep_last)"
+    },
+    {
+      "topic": "/vehicle/scan",
+      "type": "sensor_msgs/msg/LaserScan",
+      "frame_id": "lidar_link",
+      "time_source": "simulation (/clock)",
+      "declared_hz": 5,
+      "measured_hz": 5.4,
+      "qos": "sensor_data (best_effort, keep_last)"
+    },
+    {
+      "topic": "/vehicle/imu",
+      "type": "sensor_msgs/msg/Imu",
+      "frame_id": "imu_link",
+      "time_source": "simulation (/clock)",
+      "declared_hz": 100,
+      "measured_hz": 97.8,
+      "qos": "sensor_data (best_effort, keep_last)"
+    },
+    {
+      "topic": "/vehicle/odom",
+      "type": "nav_msgs/msg/Odometry",
+      "frame_id": "odom",
+      "child_frame_id": "base_link",
+      "time_source": "simulation (/clock)",
+      "declared_hz": 50,
+      "measured_hz": 50.4,
+      "qos": "reliable"
+    }
+  ]
+}
